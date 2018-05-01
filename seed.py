@@ -43,7 +43,7 @@ def load_movies():
 
     for row in open("seed_data/u.item"):
         row = row.rstrip()
-        movie_id, title, released_str, imdb_url = row.split("|")[0:4]
+        movie_id, title, released_str, video_release, imdb_url = row.split("|")[0:5]
 
         # Format movie_id and released_at
         title = title[:-7]
