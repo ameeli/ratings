@@ -86,6 +86,24 @@ def log_user_in():
         return redirect('/login-form')
 
 
+@app.route("/movies")
+def show_movie_list():
+    """Shows list if movie titles"""
+
+    movies = Movie.query.order_by('title').all()
+
+    return render_template("movies.html", movies=movies)
+
+
+@app.route("/movie-details")
+def show_movie_details():
+    """Show movie details"""
+
+    movie_id = request.args.get("movie_id")
+    movie = Movie.query.filter(Movie.movie_id==movie_id).one()
+
+    return render_template("movie_details.html", movie=movie)
+
 @app.route("/users")
 def user_list():
     """Show list of users."""
