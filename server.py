@@ -23,25 +23,26 @@ app.jinja_env.undefined = StrictUndefined
 @app.route('/')
 def index():
     """Homepage."""
-    return render_template("homepage.html")
+
+    return render_template("homepage.html", session=session)
 
 
-@app.route('/registration')
-def register_user():
+@app.route('/registration-form')
+def show_registration_form():
     """Registration form"""
 
     return render_template("registration.html")
 
 
-@app.route('/form-process', methods=['POST'])
-def process_user():
+@app.route('/process-registration', methods=['POST'])
+def register_user():
     """Add user information to database"""
 
     user_email = request.form.get("email")
     user_password = request.form.get("password")
 
     if User.query.filter(User.email==user_email).all():
-        flash('You are already registered! Please sign in.')
+        flash('You are already registered! Please log in.')
         return redirect('/')
     else:
         user = User(email=user_email, password=user_password)
@@ -51,11 +52,20 @@ def process_user():
         return redirect('/')
 
 
-@app.route('/login')
-def login():
+@app.route('/login-form')
+def show_login_form():
     """Add user information to database"""
 
     return render_template("login-form.html")
+
+
+@app.route('/logout')
+def logout_user():
+    """Logs out user"""
+    session.clear()
+
+    return render_template('log-out.html')
+
 
 @app.route('/log-user-in', methods=["POST"])
 def log_user_in():
@@ -68,11 +78,12 @@ def log_user_in():
 
     if q.filter(User.email==user_email, User.password==user_password).all():
         flash('You are logged in')
+        session['email'] = user_email
         return redirect('/')
+
     else:
         flash('Email and/or password does not match. Please try again.')
-        return redirect('/login')
-
+        return redirect('/login-form')
 
 
 @app.route("/users")
