@@ -75,10 +75,12 @@ def log_user_in():
     user_password = request.form.get("password")
 
     q = User.query
-
-    if q.filter(User.email==user_email, User.password==user_password).all():
+    # figure out how to get user_id in session
+    if q.filter(User.email==user_email, User.password==user_password).one():
         flash('You are logged in')
         session['email'] = user_email
+        session['user_id'] = q.filter(User.email==user_email).first().user_id
+
         return redirect('/')
 
     else:
@@ -103,6 +105,29 @@ def show_movie_details():
     movie = Movie.query.filter(Movie.movie_id==movie_id).one()
 
     return render_template("movie_details.html", movie=movie)
+
+
+@app.route("/add-rating", methods=["POST"])
+def rate_movie():
+    """Add new rating or edit existing rating."""
+
+    new_score = request.form.get("score")
+    movie_id = request.form.get("movie_id")
+
+    db_score = db.session.query(Rating, 
+                                User).join(User).filter(Rating.movie_id==movie_id, 
+                                                        User.user_id==session['user_id']).one()
+
+    if db_score:
+        db_score[0][0].score = new_score
+    else:
+        new_rating = Rating(movie_id=movie_id, user_id=session['user_id'], score=new_score)
+        db.session.add(new_rating)
+    
+    db.session.commit()
+
+    return redirect("/movie-details")
+
 
 @app.route("/users")
 def user_list():

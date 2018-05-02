@@ -6,12 +6,41 @@
 <ul>
 	<li><strong>Movie ID:</strong> {{ movie.movie_id }}</li>
 	<li><strong>Released:</strong> {{ movie.released_at.month }}/{{ movie.released_at.day }}/{{movie.released_at.year }}</li>
-	<li><strong>IMDB:</strong> {{ movie.imdb_url }}</li>
+	<li><strong>IMDB:</strong> <a href="{{ movie.imdb_url }}">link</a></li>
 </ul>
+
+{% if 'email' in session %}
+  Rate movie:
+  <form action="/add-rating" method="POST">
+  	<input type="hidden" name="score" value="1">
+  	<input type="hidden" name="movie_id" value="{{ movie.movie_id }}">
+   	<input type="submit" value="1 Star">
+  </form>
+  <form action="/add-rating" method="POST">
+  	<input type="hidden" name="score" value="2">
+  	<input type="hidden" name="movie_id" value="{{ movie.movie_id }}">
+   	<input type="submit" value="2 Stars">
+  </form>
+  <form action="/add-rating" method="POST">
+  	<input type="hidden" name="score" value="3">
+  	<input type="hidden" name="movie_id" value="{{ movie.movie_id }}">
+   	<input type="submit" value="3 Stars">
+  </form>
+  <form action="/add-rating" method="POST">
+  	<input type="hidden" name="score" value="4">
+  	<input type="hidden" name="movie_id" value="{{ movie.movie_id }}">
+   	<input type="submit" value="4 Stars">
+  </form>
+  <form action="/add-rating" method="POST">
+  	<input type="hidden" name="score" value="5">
+  	<input type="hidden" name="movie_id" value="{{ movie.movie_id }}">
+   	<input type="submit" value="5 Stars">
+  </form> 	
+{% endif %}
 
 <ul>
 {% for rating in movie.ratings %}
-	<li>Rating: {{ rating.score }}</li>
+	<li>User: {{ rating.user_id }} | Rating: {{ rating.score }}</li>
 {% endfor %}
 </ul>
 
