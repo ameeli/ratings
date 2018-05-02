@@ -59,14 +59,6 @@ def show_login_form():
     return render_template("login-form.html")
 
 
-@app.route('/logout')
-def logout_user():
-    """Logs out user"""
-    session.clear()
-
-    return render_template('log-out.html')
-
-
 @app.route('/log-user-in', methods=["POST"])
 def log_user_in():
     """Check that user exists in db and log them in"""
@@ -75,7 +67,7 @@ def log_user_in():
     user_password = request.form.get("password")
 
     q = User.query
-    # figure out how to get user_id in session
+
     if q.filter(User.email==user_email, User.password==user_password).one():
         flash('You are logged in')
         session['email'] = user_email
@@ -88,6 +80,14 @@ def log_user_in():
         return redirect('/login-form')
 
 
+@app.route('/logout')
+def logout_user():
+    """Logs out user"""
+    session.clear()
+
+    return render_template('log-out.html')
+
+
 @app.route("/movies")
 def show_movie_list():
     """Shows list if movie titles"""
@@ -97,12 +97,11 @@ def show_movie_list():
     return render_template("movies.html", movies=movies)
 
 
-@app.route("/movie-details")
-def show_movie_details():
+@app.route("/movie-details/<movie_id>")
+def show_movie_details(movie_id):
     """Show movie details"""
 
-    movie_id = request.args.get("movie_id")
-    movie = Movie.query.filter(Movie.movie_id==movie_id).one()
+    movie = Movie.query.filter(Movie.movie_id==movie_id).first()
 
     return render_template("movie_details.html", movie=movie)
 
@@ -113,20 +112,22 @@ def rate_movie():
 
     new_score = request.form.get("score")
     movie_id = request.form.get("movie_id")
+    user_id = session['user_id']
 
-    db_score = db.session.query(Rating, 
-                                User).join(User).filter(Rating.movie_id==movie_id, 
-                                                        User.user_id==session['user_id']).one()
+    db_score = Rating.query.filter(Rating.movie_id==movie_id, 
+                                   Rating.user_id==user_id).first()
 
     if db_score:
-        db_score[0][0].score = new_score
+        db_score.score = new_score
+        flash('Your rating has been updated.')
     else:
-        new_rating = Rating(movie_id=movie_id, user_id=session['user_id'], score=new_score)
+        new_rating = Rating(movie_id=movie_id, user_id=user_id, score=new_score)
         db.session.add(new_rating)
+        flash('Your rating has been added.')
     
     db.session.commit()
 
-    return redirect("/movie-details")
+    return redirect("/movie-details/" + movie_id)
 
 
 @app.route("/users")
@@ -147,6 +148,6 @@ if __name__ == "__main__":
     connect_to_db(app)
 
     # Use the DebugToolbar
-    # DebugToolbarExtension(app)
+    DebugToolbarExtension(app)
 
     app.run(port=5000, host='0.0.0.0')
