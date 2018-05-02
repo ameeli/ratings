@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<h1><strong>Movies</strong></h1>
 
 {% for movie in movies %}
-<p><a href="/movie-details?movie_id={{ movie.movie_id }}">{{ movie.title }}</a></p>
+<p><a href="/movie-details/{{ movie.movie_id }}">{{ movie.title }}</a></p>
 {% endfor %}
 
 {% endblock %}
