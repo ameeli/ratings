@@ -2,6 +2,8 @@
 
 from flask_sqlalchemy import SQLAlchemy
 
+from correlation import pearson
+
 # This is the connection to the PostgreSQL database; we're getting this through
 # the Flask-SQLAlchemy helper library. On this, we can find the `session`
 # object, where we do most of our interactions (like committing, etc.)
@@ -67,6 +69,63 @@ class Rating(db.Model):
                                                                                self.movie_id,
                                                                                self.user_id,
                                                                                self.score)
+
+
+def compare_users(movie_id, user_id):
+    """Create dictionary of user's ratings and find other others who have rated movie."""
+
+    # Get User instance
+    u = User.query.get(user_id)
+
+    # Find other ratings for the movie
+    other_ratings = Rating.query.filter_by(movie_id=movie_id).all()
+    # Find users connected to those ratings
+    other_users = [r.user for r in other_ratings]
+
+    o_prime_user_id = 0
+    o_prime_similarity = 0.0
+
+    for o in other_users:
+        similarity = calc_similarity(u, o)
+
+        if similarity > o_prime_similarity:
+            o_prime_similarity = similarity
+            o_prime_user_id = o.user_id
+
+
+def calc_similarity(user1, user2):
+    """Calclate similarity between users"""
+    
+    # create dictionary of user's ratings using the key/value pair of {movie_id: ratings}
+    user1_ratings_dict = {}
+    
+    # add to dictionary with user info
+    for r in user1.ratings:
+        user1_ratings_dict[r.movie_id] = r
+
+    # create list to hold pairs
+    pairs = []
+
+    for user2_rating in user2.ratings:
+        user1_rating = user1_ratings_dict.get(user2_rating.movie_id)
+
+        if user1_rating:
+            pairs.append((user1_rating.score, user2_rating.score))
+
+    similarity = pearson(pairs)
+    
+    return similarity
+
+
+# def compare_users(user_ratings, other)
+
+#     # Get list of other users who have rated movie
+#     other_ratings = Rating.query.filter_by(movie_id=movie_id).all()
+#     other_users = [r.user for r in other_ratings]
+
+
+
+
 
 
 
