@@ -9,8 +9,6 @@ from flask_debugtoolbar import DebugToolbarExtension
 from model import User, Rating, Movie, connect_to_db, db
 
 
-
-
 app = Flask(__name__)
 
 # Required to use Flask sessions and the debug toolbar
